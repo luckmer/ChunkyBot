@@ -1,22 +1,24 @@
 {
-  "name": "chunkybot",
+  "name": "rhythmwhiskerbot",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/luckmer/ChunkyBot.git",
   "author": "luckmer <woszczo04@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/Bot.ts",
-    "start": "ts-node src/Bot.ts"
+    "dev": "nodemon index.ts",
+    "start": "ts-node index.ts"
   },
   "dependencies": {
     "discord.js": "^14.11.0",
+    "dotenv": "^16.3.1",
     "nodemon": "^2.0.22",
     "string-progressbar": "^1.0.4",
     "youtube-sr": "^4.3.4"
   },
   "devDependencies": {
     "@types/node": "^20.3.3",
+    "eslint": "^8.44.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   }
