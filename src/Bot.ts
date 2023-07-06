@@ -1,4 +1,12 @@
-import { type ApplicationCommandDataResolvable, type Client, Events, Interaction, REST, Routes } from "discord.js";
+import {
+  type ApplicationCommandDataResolvable,
+  type Client,
+  Collection,
+  Events,
+  Interaction,
+  REST,
+  Routes
+} from "discord.js";
 import dotenv from "dotenv";
 import { readdirSync } from "fs";
 import * as path from "path";
@@ -9,7 +17,8 @@ dotenv.config();
 export default class Bot {
   commands: ApplicationCommandDataResolvable[] = [];
   clientId: string = "";
-  public client: Client;
+  interactionCommands: Collection<string, Command> = new Collection<string, Command>();
+  client: Client;
 
   constructor(client: Client) {
     client.login(process.env.DISCORD_TOKEN).catch((err) => console.log("failed to connect", err));
@@ -43,6 +52,7 @@ export default class Bot {
 
         for (const command of commands) {
           this.commands.push(command.data);
+          this.interactionCommands.set(command.data.name, command);
         }
       }
 
@@ -54,14 +64,25 @@ export default class Bot {
     this.client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       if (!interaction.isChatInputCommand()) return;
 
-      // TODO : connect commands
+      const command: Command | undefined = this.interactionCommands.get(interaction.commandName);
 
-      if (interaction.commandName === "play") {
-        await interaction.reply({ content: "play ", ephemeral: true });
+      if (!command) {
+        await interaction.reply({
+          content: `No command matching ${interaction.commandName} was found.`,
+          ephemeral: true
+        });
+        return;
       }
 
-      if (interaction.commandName === "stop") {
-        await interaction.reply({ content: "stop ", ephemeral: true });
+      try {
+        await command.execute(interaction);
+      } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+          await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
+        } else {
+          await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+        }
       }
     });
   };
