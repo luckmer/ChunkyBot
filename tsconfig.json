@@ -18,7 +18,7 @@
     "sourceMap": false,
     "baseUrl": "./"
   },
-  "files": ["src/Bot.ts"],
-  "include": ["./**/*.ts"],
-  "exclude": [ "node_modules",  "dist"],
+  "files": ["src/Bot.ts", "src"],
+  "include": ["*"],
+  "exclude": ["node_modules", "dist"]
 }
