@@ -1,16 +1,16 @@
 import {
-  type ApplicationCommandDataResolvable,
-  type Client,
   Collection,
   Events,
   Interaction,
   REST,
-  Routes
+  Routes,
+  type ApplicationCommandDataResolvable,
+  type Client
 } from "discord.js";
 import dotenv from "dotenv";
 import { readdirSync } from "fs";
 import * as path from "path";
-import { Command } from "./types";
+import { Command } from "./types/types";
 
 dotenv.config();
 

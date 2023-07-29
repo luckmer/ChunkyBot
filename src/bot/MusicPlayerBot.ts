@@ -1,12 +1,13 @@
 import {
   AudioPlayer,
+  AudioPlayerStatus,
   NoSubscriberBehavior,
   VoiceConnection,
   createAudioPlayer,
   joinVoiceChannel
 } from "@discordjs/voice";
 import { VoiceBasedChannel } from "discord.js";
-import { type AudioMaker } from "./utils/audioMaker";
+import { type AudioMaker } from "../utils/index";
 
 export class MusicPlayerBot {
   voiceChanel: VoiceConnection;
@@ -26,5 +27,6 @@ export class MusicPlayerBot {
     const audioResource = await this.audioMaker.getAudioResource();
     this.voiceChanel.subscribe(this.audioPlayer);
     this.audioPlayer.play(audioResource!);
+    this.audioPlayer.on(AudioPlayerStatus.Idle, () => this.voiceChanel.disconnect());
   }
 }
