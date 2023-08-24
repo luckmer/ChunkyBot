@@ -5,19 +5,21 @@ import {
   REST,
   Routes,
   type ApplicationCommandDataResolvable,
-  type Client
+  type Client,
+  type Snowflake
 } from "discord.js";
 import dotenv from "dotenv";
 import { readdirSync } from "fs";
 import * as path from "path";
 import { Command } from "./types/types";
-
+import { MusicPlayerBot } from "./bot/MusicPlayerBot";
 dotenv.config();
 
 export default class Bot {
   commands: ApplicationCommandDataResolvable[] = [];
   clientId: string = "";
-  interactionCommands: Collection<string, Command> = new Collection<string, Command>();
+  interactionCommands: Collection<Snowflake, Command> = new Collection<Snowflake, Command>();
+  queues: Collection<Snowflake, MusicPlayerBot> = new Collection<Snowflake, MusicPlayerBot>();
   client: Client;
 
   constructor(client: Client) {
