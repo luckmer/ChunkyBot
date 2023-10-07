@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
-import { AudioMaker, validateYoutubeUrl } from "../../utils";
+import { AudioMaker, EmbedMaker, validateYoutubeUrl } from "../../utils";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -18,33 +18,62 @@ module.exports = {
     PermissionsBitField.Flags.ManageMessages
   ],
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    interaction.reply("⏳ Loading...").catch(() => {});
+    const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
+    const botQueue = bot.queues.get(interaction.guild!.id);
+    const { channel } = guildMember!.voice;
+    const embedMaker = new EmbedMaker();
+
     try {
-      const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
-      const { channel } = guildMember!.voice;
+      await interaction.reply({ embeds: [embedMaker.getContentModal("⏳ Loading...")] });
+    } catch {}
 
-      if (!channel) {
-        await interaction.editReply("You need to be connected to a voice channel to play music!");
-        return;
-      }
-
-      const url = interaction.options.getString("url");
-
-      if (!url) {
-        await interaction.editReply("The provided URL cannot be empty.");
-        return;
-      }
-
-      if (!url.match(validateYoutubeUrl)) {
-        bot.interactionCommands.get("search")?.execute(interaction);
-        return;
-      }
-
-      const song = await AudioMaker.setSong(url);
-      new MusicPlayerBot(song, channel).play();
-      await interaction.editReply(url);
-    } catch (error) {
-      interaction.editReply("ups, we have a tiny problem, can you please try again?");
+    if (!channel) {
+      await interaction.editReply({
+        embeds: [embedMaker.getContentModal("⚠️ You need to be connected to a voice channel to play music!")]
+      });
+      return;
     }
+
+    const url = interaction.options.getString("url")!;
+
+    if (!url.match(validateYoutubeUrl)) {
+      bot.interactionCommands.get("search")?.execute(interaction);
+      return;
+    }
+
+    const song = await AudioMaker.setSong(url);
+
+    if (typeof song === "undefined") {
+      await interaction.editReply({
+        embeds: [embedMaker.getContentModal("Sorry, but I couldn't find any songs!")]
+      });
+      return;
+    }
+
+    const musicPlayer = new MusicPlayerBot({
+      voicechannel: channel,
+      chanel: interaction.channel,
+      interaction,
+      botQueue
+    });
+
+    bot.queues.set(interaction.guild!.id, musicPlayer);
+    const queue = Array.from(botQueue?.queues.values() ?? []).flat();
+
+    await musicPlayer.addToQueueAndPlay([song, ...queue]);
+
+    await interaction.channel?.send({
+      embeds: [
+        !queue.length ? embedMaker.getSongModal(song.songInfo) : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+      ]
+    });
+
+    channel.send({
+      embeds: [
+        !queue.length ? embedMaker.getSongModal(song.songInfo) : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+      ]
+    });
+
+    interaction.deleteReply().catch(console.error);
   }
 };

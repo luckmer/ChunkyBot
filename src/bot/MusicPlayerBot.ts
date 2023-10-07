@@ -1,32 +1,78 @@
 import {
   AudioPlayer,
+  AudioPlayerState,
   AudioPlayerStatus,
   NoSubscriberBehavior,
   VoiceConnection,
   createAudioPlayer,
   joinVoiceChannel
 } from "@discordjs/voice";
-import { VoiceBasedChannel } from "discord.js";
-import { type AudioMaker } from "../utils/index";
+import { Collection, type ChatInputCommandInteraction, type TextBasedChannel } from "discord.js";
+import { IMusicPlayerBot } from "../types/types";
+import { miliseconds, type AudioMaker } from "../utils/index";
 
 export class MusicPlayerBot {
+  audioPlayer: AudioPlayer;
+  interaction: ChatInputCommandInteraction;
+  chanel: TextBasedChannel | null;
   voiceChanel: VoiceConnection;
-  audioPlayer: AudioPlayer = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
-  audioMaker: AudioMaker;
+  queues: Collection<number, AudioMaker[]> = new Collection<number, AudioMaker[]>();
+  botQueue: MusicPlayerBot | undefined = undefined;
+  songs: AudioMaker[] = [];
+  lockPlay = false;
+  readyLock = false;
+  stopped = false;
 
-  constructor(audioMaker: AudioMaker, channel: VoiceBasedChannel) {
+  constructor({ voicechannel, chanel, interaction, botQueue }: IMusicPlayerBot) {
+    this.audioPlayer = typeof botQueue === "undefined" ? this.subscribeToAudioPlayer() : botQueue.audioPlayer;
+    this.botQueue = botQueue;
     this.voiceChanel = joinVoiceChannel({
-      channelId: channel.id,
-      guildId: channel.guild.id,
-      adapterCreator: channel.guild.voiceAdapterCreator
+      channelId: voicechannel.id,
+      guildId: voicechannel.guild.id,
+      adapterCreator: voicechannel.guild.voiceAdapterCreator
     });
-    this.audioMaker = audioMaker;
+
+    this.voiceChanel.subscribe(this.audioPlayer);
+    this.interaction = interaction;
+    this.chanel = chanel;
+
+    this.audioPlayer.on("stateChange" as any, async (oldState: AudioPlayerState, newState: AudioPlayerState) => {
+      if (oldState.status !== AudioPlayerStatus.Idle && newState.status === AudioPlayerStatus.Idle) {
+        this.songs.pop();
+        if (!this.songs.length) {
+          return this.audioPlayer.stop();
+        }
+        this.play();
+      }
+
+      // TODO: add new UI with current music
+      // if (oldState.status === AudioPlayerStatus.Buffering && newState.status === AudioPlayerStatus.Playing) {
+      // }
+    });
   }
 
-  async play() {
-    const audioResource = await this.audioMaker.getAudioResource();
-    this.voiceChanel.subscribe(this.audioPlayer);
-    this.audioPlayer.play(audioResource!);
-    this.audioPlayer.on(AudioPlayerStatus.Idle, () => this.voiceChanel.disconnect());
+  subscribeToAudioPlayer() {
+    return createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
+  }
+
+  async addToQueueAndPlay(songs: AudioMaker[]) {
+    this.queues.set(Math.random(), songs);
+    this.songs = songs;
+    if (this.botQueue?.lockPlay || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) return;
+    await this.play();
+    this.lockPlay = typeof this.botQueue === "undefined" ? true : this.botQueue?.lockPlay;
+  }
+
+  async play(): Promise<void> {
+    this.lockPlay = true;
+    try {
+      const nextSong = this.songs[0];
+      const audioResource = await nextSong.getAudioResource();
+      this.audioPlayer.play(audioResource);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.lockPlay = false;
+    }
   }
 }
