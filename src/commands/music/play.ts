@@ -42,6 +42,14 @@ module.exports = {
     }
 
     const song = await AudioMaker.setSong(url);
+
+    if (typeof song === "undefined") {
+      await interaction.editReply({
+        embeds: [embedMaker.getContentModal("Sorry, but I couldn't find any songs!")]
+      });
+      return;
+    }
+
     const musicPlayer = new MusicPlayerBot({
       voicechannel: channel,
       chanel: interaction.channel,

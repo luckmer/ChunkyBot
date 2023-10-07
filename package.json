@@ -1,7 +1,6 @@
 {
   "name": "rhythmwhiskerbot",
   "version": "1.0.0",
-  "main": "index.js",
   "repository": "https://github.com/luckmer/ChunkyBot.git",
   "author": "luckmer <woszczo04@gmail.com>",
   "license": "MIT",

@@ -87,6 +87,13 @@ module.exports = {
           botQueue
         });
 
+        if (typeof song === "undefined") {
+          await interaction.editReply({
+            embeds: [embedMaker.getContentModal("Sorry, but I couldn't find any songs!")]
+          });
+          return;
+        }
+
         bot.queues.set(interaction.guild!.id, musicPlayer);
         const queue = Array.from(botQueue?.queues.values() ?? []).flat();
 

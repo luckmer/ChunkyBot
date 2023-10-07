@@ -1,5 +1,6 @@
 import {
   AudioPlayer,
+  AudioPlayerState,
   AudioPlayerStatus,
   NoSubscriberBehavior,
   VoiceConnection,
@@ -30,9 +31,24 @@ export class MusicPlayerBot {
       guildId: voicechannel.guild.id,
       adapterCreator: voicechannel.guild.voiceAdapterCreator
     });
+
     this.voiceChanel.subscribe(this.audioPlayer);
     this.interaction = interaction;
     this.chanel = chanel;
+
+    this.audioPlayer.on("stateChange" as any, async (oldState: AudioPlayerState, newState: AudioPlayerState) => {
+      if (oldState.status !== AudioPlayerStatus.Idle && newState.status === AudioPlayerStatus.Idle) {
+        this.songs.pop();
+        if (!this.songs.length) {
+          return this.audioPlayer.stop();
+        }
+        this.play();
+      }
+
+      // TODO: add new UI with current music
+      // if (oldState.status === AudioPlayerStatus.Buffering && newState.status === AudioPlayerStatus.Playing) {
+      // }
+    });
   }
 
   subscribeToAudioPlayer() {
@@ -42,35 +58,17 @@ export class MusicPlayerBot {
   async addToQueueAndPlay(songs: AudioMaker[]) {
     this.queues.set(Math.random(), songs);
     this.songs = songs;
-
-    const areSongsEmpty = this.songs.length === 0;
-    const isBotQueueLockedOrPlaying =
-      this.botQueue?.lockPlay || this.audioPlayer.state.status !== AudioPlayerStatus.Idle;
-
-    if (areSongsEmpty) this.audioPlayer.stop();
-    if (isBotQueueLockedOrPlaying || areSongsEmpty) return;
-
+    if (this.botQueue?.lockPlay || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) return;
     await this.play();
     this.lockPlay = typeof this.botQueue === "undefined" ? true : this.botQueue?.lockPlay;
   }
 
-  async play() {
+  async play(): Promise<void> {
     this.lockPlay = true;
-
     try {
       const nextSong = this.songs[0];
-      console.log("so next song", nextSong?.song?.title);
-
       const audioResource = await nextSong.getAudioResource();
-      const delayMilliseconds = nextSong.song.duration * miliseconds;
       this.audioPlayer.play(audioResource);
-      console.log(this.songs.length);
-
-      console.log(this.songs.length);
-      setTimeout(() => {
-        this.lockPlay = false;
-        this.play();
-      }, delayMilliseconds);
     } catch (error) {
       console.error(error);
     } finally {

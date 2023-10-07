@@ -11,14 +11,18 @@ export class AudioMaker {
     this.songInfo = songInfo;
   }
 
-  static async setSong(url: string) {
-    const songInfo = await video_basic_info(url);
-    const song = {
-      url: songInfo.video_details.url,
-      title: songInfo.video_details?.title ?? "",
-      duration: parseInt(songInfo.video_details.durationInSec.toString())
-    };
-    return new this({ song, songInfo });
+  static async setSong(url: string): Promise<any> {
+    try {
+      const songInfo = await video_basic_info(url);
+      const song = {
+        url: songInfo.video_details.url,
+        title: songInfo.video_details?.title ?? "",
+        duration: parseInt(songInfo.video_details.durationInSec.toString())
+      };
+      return new this({ song, songInfo });
+    } catch {
+      return undefined;
+    }
   }
 
   async getAudioResource() {
