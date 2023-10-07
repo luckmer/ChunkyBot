@@ -97,6 +97,8 @@ module.exports = {
         bot.queues.set(interaction.guild!.id, musicPlayer);
         const queue = Array.from(botQueue?.queues.values() ?? []).flat();
 
+        await musicPlayer.addToQueueAndPlay([song, ...queue]);
+
         await interaction.channel?.send({
           embeds: [
             !queue.length
