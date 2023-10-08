@@ -1,5 +1,5 @@
 export * as play from "./music/play";
-export * as queue from "./music/queue";
+export * as list from "./music/list";
 export * as search from "./music/search";
 export * as pause from "./music/pause";
 export * as resume from "./music/resume";
