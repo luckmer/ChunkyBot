@@ -2,13 +2,14 @@ import {
   AudioPlayer,
   AudioPlayerState,
   AudioPlayerStatus,
+  AudioResource,
   NoSubscriberBehavior,
   VoiceConnection,
   createAudioPlayer,
   joinVoiceChannel
 } from "@discordjs/voice";
 import { Collection, type ChatInputCommandInteraction, type TextBasedChannel } from "discord.js";
-import { IMusicPlayerBot } from "../types/types";
+import { IMusicPlayerBot, ISong } from "../types/types";
 import { type AudioMaker } from "../utils/index";
 
 export class MusicPlayerBot {
@@ -16,6 +17,7 @@ export class MusicPlayerBot {
   interaction: ChatInputCommandInteraction;
   chanel: TextBasedChannel | null;
   voiceChanel: VoiceConnection;
+  audioResource: AudioResource<ISong> | undefined = undefined;
   queues: Collection<number, AudioMaker[]> = new Collection<number, AudioMaker[]>();
   botQueue: MusicPlayerBot | undefined = undefined;
   songs: AudioMaker[] = [];
@@ -24,8 +26,10 @@ export class MusicPlayerBot {
   stopped = false;
 
   constructor({ voicechannel, chanel, interaction, botQueue }: IMusicPlayerBot) {
-    this.audioPlayer = typeof botQueue === "undefined" ? this.subscribeToAudioPlayer() : botQueue.audioPlayer;
+    this.audioPlayer = botQueue?.audioPlayer || this.subscribeToAudioPlayer();
+    this.audioResource = botQueue?.audioResource;
     this.botQueue = botQueue;
+
     this.voiceChanel = joinVoiceChannel({
       channelId: voicechannel.id,
       guildId: voicechannel.guild.id,
@@ -68,6 +72,7 @@ export class MusicPlayerBot {
     try {
       const nextSong = this.songs[0];
       const audioResource = await nextSong.getAudioResource();
+      this.audioResource = audioResource;
       this.audioPlayer.play(audioResource);
     } catch (error) {
       console.error(error);
