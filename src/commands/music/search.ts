@@ -29,14 +29,11 @@ module.exports = {
     PermissionsBitField.Flags.ManageMessages
   ],
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    interaction.deferReply({ ephemeral: true }).catch(() => {});
     const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
     const botQueue = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
     const embedMaker = new EmbedMaker();
-
-    try {
-      await interaction.reply({ embeds: [embedMaker.getContentModal("⏳ Loading...")] });
-    } catch {}
 
     if (!channel) {
       await interaction.editReply({
@@ -128,5 +125,7 @@ module.exports = {
     try {
       bot.interactionCommands.get("play")?.execute(interaction);
     } catch {}
+
+    interaction.deleteReply().catch(console.error);
   }
 };
