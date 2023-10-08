@@ -11,7 +11,8 @@ import { YouTube, type Video } from "youtube-sr";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 import { IInteraction } from "../../types/types";
-import { AudioMaker, collectorTimeout, validateYoutubeUrl, EmbedMaker } from "../../utils";
+import { AudioMaker, collectorTimeout, EmbedMaker } from "../../utils";
+import { validateYoutubeUrl } from "../../reqex";
 
 module.exports = {
   data: new SlashCommandBuilder()

@@ -1,7 +1,8 @@
 import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
-import { AudioMaker, EmbedMaker, validateYoutubeUrl } from "../../utils";
+import { AudioMaker, EmbedMaker } from "../../utils";
+import { validateYoutubeUrl } from "../../reqex";
 
 module.exports = {
   data: new SlashCommandBuilder()
