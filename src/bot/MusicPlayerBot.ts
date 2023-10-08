@@ -9,7 +9,7 @@ import {
 } from "@discordjs/voice";
 import { Collection, type ChatInputCommandInteraction, type TextBasedChannel } from "discord.js";
 import { IMusicPlayerBot } from "../types/types";
-import { miliseconds, type AudioMaker } from "../utils/index";
+import { type AudioMaker } from "../utils/index";
 
 export class MusicPlayerBot {
   audioPlayer: AudioPlayer;

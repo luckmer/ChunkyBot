@@ -64,13 +64,17 @@ module.exports = {
 
     await interaction.channel?.send({
       embeds: [
-        !queue.length ? embedMaker.getSongModal(song.songInfo) : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+        !queue.length
+          ? embedMaker.getSongModal(song.songInfo)
+          : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
       ]
     });
 
     channel.send({
       embeds: [
-        !queue.length ? embedMaker.getSongModal(song.songInfo) : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+        !queue.length
+          ? embedMaker.getSongModal(song.songInfo)
+          : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
       ]
     });
 

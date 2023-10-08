@@ -103,7 +103,7 @@ module.exports = {
           embeds: [
             !queue.length
               ? embedMaker.getSongModal(song.songInfo)
-              : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+              : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
           ]
         });
 
@@ -111,7 +111,7 @@ module.exports = {
           embeds: [
             !queue.length
               ? embedMaker.getSongModal(song.songInfo)
-              : embedMaker.getContentModal("🛣️  Added to queue  🛣️")
+              : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
           ]
         });
 
