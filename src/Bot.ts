@@ -54,6 +54,8 @@ export default class Bot {
 
         for (const command of commands) {
           this.commands.push(command.data);
+
+          console.log(command.data.name);
           this.interactionCommands.set(command.data.name, command);
         }
       }

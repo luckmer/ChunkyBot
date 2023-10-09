@@ -29,18 +29,18 @@ module.exports = {
     PermissionsBitField.Flags.ManageMessages
   ],
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    interaction.deferReply({ ephemeral: true }).catch(() => {});
     const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
     const botQueue = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
     const embedMaker = new EmbedMaker();
 
     if (!channel) {
-      await interaction.editReply({
+      await interaction.reply({
         embeds: [embedMaker.getContentModal("⚠️ You need to be connected to a voice channel to play music!")]
       });
       return;
     }
+    interaction.deferReply({ ephemeral: true }).catch(() => {});
 
     const url = interaction.options.getString("url")!;
 
@@ -97,22 +97,16 @@ module.exports = {
 
         await musicPlayer.addToQueueAndPlay([song, ...queue]);
 
-        await interaction.channel?.send({
+        const response = {
           embeds: [
             !queue.length
               ? embedMaker.getSongModal(song.songInfo)
               : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
           ]
-        });
+        };
 
-        channel.send({
-          embeds: [
-            !queue.length
-              ? embedMaker.getSongModal(song.songInfo)
-              : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
-          ]
-        });
-
+        await interaction.channel?.send(response);
+        channel.send(response);
         interaction.deleteReply().catch(console.error);
       });
 
