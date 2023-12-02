@@ -40,7 +40,7 @@ module.exports = {
       });
       return;
     }
-    interaction.deferReply({ ephemeral: true }).catch(() => {});
+    interaction.deferReply({ ephemeral: true }).catch(console.error);
 
     const url = interaction.options.getString("url")!;
 
@@ -101,7 +101,7 @@ module.exports = {
           embeds: [
             !queue.length
               ? embedMaker.getSongModal(song.songInfo)
-              : embedMaker.getQueueModal("🛣️  Added to queue  🛣️", song.songInfo)
+              : embedMaker.getQueueModal("| Track Added to Queue", song.songInfo)
           ]
         };
 

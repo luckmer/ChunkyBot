@@ -6,7 +6,9 @@ module.exports = {
     .setDescription("Allows you to get information about the current ping"),
   execute(interaction: ChatInputCommandInteraction) {
     interaction
-      .reply({ content: `Current ping is: ${Math.round(interaction.client.ws.ping)}`, ephemeral: true })
-      .catch(console.error);
+      .reply({ content: "Pong: " + "`" + `${Math.round(interaction.client.ws.ping)}ms` + "`", ephemeral: true })
+      .catch(() => {
+        interaction.deleteReply().catch(console.error);
+      });
   }
 };

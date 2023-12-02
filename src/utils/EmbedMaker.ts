@@ -1,5 +1,6 @@
 import { ColorResolvable, EmbedBuilder } from "discord.js";
 import { InfoData } from "play-dl";
+import { formatTime } from "./formatTime";
 
 export class EmbedMaker {
   getSongModal(song: InfoData) {
@@ -7,7 +8,7 @@ export class EmbedMaker {
 
     const chanelIcon = icons?.length ? icons[0].url : undefined;
     return new EmbedBuilder()
-      .setColor(0x0099ff)
+      .setColor("#7646CD")
       .setTitle(song.video_details.title ?? "--")
       .setURL(song.video_details.channel?.url ?? null)
       .setAuthor({
@@ -15,16 +16,21 @@ export class EmbedMaker {
         iconURL: chanelIcon,
         url: song.video_details.channel?.url
       })
+
       .setThumbnail(typeof chanelIcon === "undefined" ? null : chanelIcon)
+      .addFields({
+        name: "Duration",
+        value: "[" + "`" + `${formatTime(song.video_details.durationInSec)}` + "`" + "]"
+      })
       .setTimestamp();
   }
 
-  getContentModal(content: string, color: ColorResolvable = 0x0099ff) {
-    return new EmbedBuilder().setColor(color).setTitle(content);
+  getContentModal(content: string) {
+    return new EmbedBuilder().setColor("#7646CD").setTitle(content);
   }
 
   getValueContentModal(title: string) {
-    return new EmbedBuilder().setTitle(title).setDescription("Description").setColor("#F8AA2A");
+    return new EmbedBuilder().setTitle(title).setDescription("Description").setColor("#7646CD");
   }
 
   getQueueModal(content: string, song: InfoData) {
@@ -33,16 +39,16 @@ export class EmbedMaker {
     const chanelIcon = icons?.length ? icons[0].url : undefined;
 
     return new EmbedBuilder()
-      .setColor(0xff9900)
-      .setDescription(content)
-      .setTitle(song.video_details.title ?? "--")
+      .setColor("#7646CD")
+      .setTitle(song.video_details.channel?.name ?? "--")
       .setURL(song.video_details.channel?.url ?? null)
       .setAuthor({
-        name: song.video_details.channel?.name ?? "--",
-        iconURL: chanelIcon,
-        url: song.video_details.channel?.url
+        name: content,
+        iconURL: chanelIcon
       })
-      .setThumbnail(typeof chanelIcon === "undefined" ? null : chanelIcon)
-      .setTimestamp();
+      .addFields({
+        name: "Duration",
+        value: "[" + "`" + `${formatTime(song.video_details.durationInSec)}` + "`" + "]"
+      });
   }
 }

@@ -16,15 +16,15 @@ module.exports = {
 
     if (!queue?.songs.length) {
       await interaction.editReply({
-        embeds: [embedMaker.getContentModal("Sorry, but list of songs in the playlist is empty.", "#F8AA2A")]
+        embeds: [embedMaker.getContentModal("Sorry, but list of songs in the playlist is empty.")]
       });
       return;
     }
 
     (queue?.songs ?? []).forEach((song, index) => {
       helpEmbed.addFields({
-        name: `${index + 1} Title:**${song.song.title}**`,
-        value: `duration: ${formatTime(song.song.duration)}`,
+        name: `${index + 1} Title: **${song.song.title}**`,
+        value: "duration: " + "[" + "`" + `${formatTime(song.song.duration)}` + "`" + "]",
         inline: false
       });
     });

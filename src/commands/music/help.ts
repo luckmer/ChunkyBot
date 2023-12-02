@@ -21,6 +21,8 @@ module.exports = {
 
     helpEmbed.setTimestamp();
 
-    return interaction.reply({ embeds: [helpEmbed] }).catch(console.error);
+    return interaction.reply({ embeds: [helpEmbed] }).catch(() => {
+      interaction.deleteReply().catch(console.error);
+    });
   }
 };
