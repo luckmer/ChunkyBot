@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
-import { EmbedMaker } from "../../utils";
+import { EmbedMaker, formatTime } from "../../utils";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -23,8 +23,8 @@ module.exports = {
 
     (queue?.songs ?? []).forEach((song, index) => {
       helpEmbed.addFields({
-        name: `**${index + 1}: ${song.song.title}**`,
-        value: `duration: ${parseInt(song.song.duration.toString()) / 60}`,
+        name: `${index + 1} Title:**${song.song.title}**`,
+        value: `duration: ${formatTime(song.song.duration)}`,
         inline: false
       });
     });
