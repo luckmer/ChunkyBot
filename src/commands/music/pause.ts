@@ -4,7 +4,7 @@ import { EmbedMaker } from "../../utils";
 import { AudioPlayerStatus } from "@discordjs/voice";
 
 module.exports = {
-  data: new SlashCommandBuilder().setName("pause").setDescription("Pause the currently playing song"),
+  data: new SlashCommandBuilder().setName("pause").setDescription("Allows you to pause the currently listening song."),
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
     const queue = bot.queues.get(interaction.guild!.id);

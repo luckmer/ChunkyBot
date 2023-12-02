@@ -4,7 +4,7 @@ import { EmbedMaker } from "../../utils";
 import { AudioPlayerStatus } from "@discordjs/voice";
 
 module.exports = {
-  data: new SlashCommandBuilder().setName("resume").setDescription("Resume the currently paused song"),
+  data: new SlashCommandBuilder().setName("resume").setDescription("Resumes playback of stopped music"),
 
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });

@@ -17,7 +17,7 @@ import { validateYoutubeUrl } from "../../reqex";
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("search")
-    .setDescription("search a song")
+    .setDescription("Allows you to find your favorite song")
     .addStringOption((option) =>
       option.setName("url").setDescription("Enter the URL of the song you would like to search").setRequired(true)
     ),

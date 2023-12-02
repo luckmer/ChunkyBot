@@ -7,7 +7,7 @@ import { validateYoutubeUrl } from "../../reqex";
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("play")
-    .setDescription("Play a song")
+    .setDescription("Allows you to play a song using a url link")
     .addStringOption((option) =>
       option.setName("url").setDescription("Enter the URL of the song you would like to play").setRequired(true)
     ),

@@ -5,7 +5,7 @@ import { EmbedMaker } from "../../utils";
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("volume")
-    .setDescription("volume")
+    .setDescription("Allows you to control the volume")
     .addIntegerOption((option) =>
       option.setName("volume").setDescription("Enter volume").setRequired(true).setMinValue(0).setMaxValue(100)
     ),
