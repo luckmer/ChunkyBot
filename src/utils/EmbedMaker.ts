@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { ColorResolvable, EmbedBuilder } from "discord.js";
 import { InfoData } from "play-dl";
 
 export class EmbedMaker {
@@ -6,7 +6,6 @@ export class EmbedMaker {
     const icons = song.video_details.channel?.icons;
 
     const chanelIcon = icons?.length ? icons[0].url : undefined;
-
     return new EmbedBuilder()
       .setColor(0x0099ff)
       .setTitle(song.video_details.title ?? "--")
@@ -20,8 +19,12 @@ export class EmbedMaker {
       .setTimestamp();
   }
 
-  getContentModal(content: string) {
-    return new EmbedBuilder().setColor(0x0099ff).setTitle(content);
+  getContentModal(content: string, color: ColorResolvable = 0x0099ff) {
+    return new EmbedBuilder().setColor(color).setTitle(content);
+  }
+
+  getValueContentModal(title: string) {
+    return new EmbedBuilder().setTitle(title).setDescription("Description").setColor("#F8AA2A");
   }
 
   getQueueModal(content: string, song: InfoData) {
