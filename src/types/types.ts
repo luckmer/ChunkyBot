@@ -8,7 +8,7 @@ import { MusicPlayerBot } from "src/bot/MusicPlayerBot";
 
 export interface Command {
   data: SlashCommandBuilder;
-
+  cooldown: number;
   execute(...args: any): any;
 }
 

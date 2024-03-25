@@ -1,6 +1,7 @@
 import {
   ActionRowBuilder,
   ChatInputCommandInteraction,
+  GuildMember,
   PermissionsBitField,
   SlashCommandBuilder,
   StringSelectMenuBuilder,
@@ -11,7 +12,7 @@ import { YouTube, type Video } from "youtube-sr";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 import { IInteraction } from "../../types/types";
-import { AudioMaker, collectorTimeout, EmbedMaker } from "../../utils";
+import { AudioMaker, EmbedMaker } from "../../utils";
 import { validateYoutubeUrl } from "../../reqex";
 
 module.exports = {
@@ -32,6 +33,7 @@ module.exports = {
     const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
     const botQueue = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
+
     const embedMaker = new EmbedMaker();
 
     if (!channel) {
@@ -40,7 +42,7 @@ module.exports = {
       });
       return;
     }
-    interaction.deferReply({ ephemeral: true }).catch(console.error);
+    await interaction.deferReply({ ephemeral: true }).catch(console.error);
 
     const url = interaction.options.getString("url")!;
 
@@ -70,10 +72,12 @@ module.exports = {
 
       const collector = result.createMessageComponentCollector({
         filter: (interaction: IInteraction) => interaction.customId === "songSelection",
-        time: collectorTimeout
+        time: 60000
       });
 
       collector.on("collect", async (songInteraction) => {
+        bot.lockSearchCommand(false);
+        await songInteraction.deferUpdate();
         if (!(songInteraction instanceof StringSelectMenuInteraction)) return;
 
         const selectedSong = songInteraction.values[0];
@@ -107,12 +111,15 @@ module.exports = {
 
         await interaction.channel?.send(response);
         channel.send(response);
+
         interaction.deleteReply().catch(console.error);
       });
 
-      collector.on("end", async (_, reason) => {
-        if (reason === "time") interaction.deleteReply().catch(console.error);
+      collector.on("end", () => {
+        result.edit({ components: [] }).catch(console.error);
+        result.delete().catch(() => {});
       });
+
       return;
     }
 

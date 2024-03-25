@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
-import { AudioMaker, EmbedMaker } from "../../utils";
+import { AudioMaker, EmbedMaker, searchCommand } from "../../utils";
 import { validateYoutubeUrl } from "../../reqex";
 
 module.exports = {
@@ -35,6 +35,7 @@ module.exports = {
     const url = interaction.options.getString("url")!;
 
     if (!url.match(validateYoutubeUrl)) {
+      bot.lockSearchCommand(true);
       bot.interactionCommands.get("search")?.execute(interaction);
       return;
     }

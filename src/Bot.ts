@@ -1,4 +1,5 @@
 import {
+  ChatInputCommandInteraction,
   Collection,
   Events,
   Interaction,
@@ -11,8 +12,10 @@ import {
 import dotenv from "dotenv";
 import { readdirSync } from "fs";
 import * as path from "path";
-import { Command } from "./types/types";
 import { MusicPlayerBot } from "./bot/MusicPlayerBot";
+import { Command } from "./types/types";
+import { searchCommand } from "./utils";
+
 dotenv.config();
 
 export default class Bot {
@@ -20,6 +23,8 @@ export default class Bot {
   clientId: string = "";
   interactionCommands: Collection<Snowflake, Command> = new Collection<Snowflake, Command>();
   queues: Collection<Snowflake, MusicPlayerBot> = new Collection<Snowflake, MusicPlayerBot>();
+  cooldowns = new Collection<string, Collection<Snowflake, number>>();
+  lockCommand = new Collection<string, boolean>();
   client: Client;
 
   constructor(client: Client) {
@@ -34,14 +39,14 @@ export default class Bot {
     this.interactionService();
   }
 
-  getClientId = () => {
+  getClientId = (): void => {
     this.client.on(Events.ClientReady, (): void => {
       if (this.client.application === null) return;
       this.clientId = this.client.application.id;
     });
   };
 
-  registerCommands = () => {
+  registerCommands = (): void => {
     this.client.on(Events.ClientReady, async () => {
       const rest: REST = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN ?? "");
       const commandFiles: string[] = readdirSync(path.join(__dirname, "commands")).filter((file: string) =>
@@ -62,6 +67,67 @@ export default class Bot {
     });
   };
 
+  lockSearchCommand = (lock: boolean): void => {
+    if (!lock) {
+      this.cooldowns.delete(searchCommand);
+      return;
+    }
+    this.lockCommand.set(searchCommand, lock);
+  };
+
+  lockSearchCommandService = async (interaction: ChatInputCommandInteraction): Promise<boolean> => {
+    if (!this.lockCommand.has(searchCommand)) {
+      this.lockCommand.set(searchCommand, false);
+    }
+    const hasSearchLock = this.lockCommand.get(searchCommand)!;
+
+    if (hasSearchLock) {
+      await interaction.reply({
+        content: `\`Select a song\` is already active.`,
+        ephemeral: true
+      });
+      return true;
+    }
+
+    if (interaction.commandName.match(/search/)) {
+      this.lockCommand.set(interaction.commandName, true);
+      setTimeout(() => this.cooldowns.delete(searchCommand), 60000);
+    }
+    return false;
+  };
+
+  cooldownService = async (
+    interaction: ChatInputCommandInteraction,
+    command: Command | undefined
+  ): Promise<boolean> => {
+    if (!this.cooldowns.has(interaction.commandName)) {
+      this.cooldowns.set(interaction.commandName, new Collection());
+    }
+
+    const now = Date.now();
+    const timestamps = this.cooldowns.get(interaction.commandName)!;
+    const cooldownAmount = (command?.cooldown || 1) * 1000;
+
+    const timestamp = timestamps.get(interaction.user.id);
+
+    if (timestamp) {
+      const expirationTime = timestamp + cooldownAmount;
+      if (now < expirationTime) {
+        const timeLeft = (expirationTime - now) / 1000;
+        await interaction.reply({
+          content: `${timeLeft} more second(s) before reusing the \`${interaction.commandName}\` command.`,
+          ephemeral: true
+        });
+        return true;
+      }
+    }
+
+    timestamps.set(interaction.user.id, now);
+    setTimeout(() => timestamps.delete(interaction.user.id), cooldownAmount);
+
+    return false;
+  };
+
   interactionService = (): void => {
     this.client.on(Events.InteractionCreate, async (interaction: Interaction) => {
       if (!interaction.isChatInputCommand()) return;
@@ -75,6 +141,17 @@ export default class Bot {
         });
         return;
       }
+
+      if (interaction.commandName === searchCommand) {
+        this.lockCommand.set(searchCommand, true);
+        setTimeout(() => this.lockCommand.set(searchCommand, false), 60000);
+      }
+
+      const lockExecuteCommand = await this.lockSearchCommandService(interaction);
+      if (lockExecuteCommand) return;
+
+      const hasCooldown = await this.cooldownService(interaction, command);
+      if (hasCooldown) return;
 
       try {
         await command.execute(interaction);

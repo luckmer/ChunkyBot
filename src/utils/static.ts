@@ -1,2 +1,3 @@
-export const collectorTimeout = 30000;
-export const miliseconds = 1000;
+export const collectorTimeoutL: number = 30000;
+export const miliseconds: number = 1000;
+export const searchCommand: string = "search";
