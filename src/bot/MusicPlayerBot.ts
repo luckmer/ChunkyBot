@@ -21,9 +21,9 @@ export class MusicPlayerBot {
   queues: Collection<number, AudioMaker[]> = new Collection<number, AudioMaker[]>();
   botQueue: MusicPlayerBot | undefined = undefined;
   songs: AudioMaker[] = [];
-  lockPlay = false;
-  readyLock = false;
-  stopped = false;
+  lockPlay: boolean = false;
+  readyLock: boolean = false;
+  stopped: boolean = false;
 
   constructor({ voicechannel, chanel, interaction, botQueue }: IMusicPlayerBot) {
     this.audioPlayer = botQueue?.audioPlayer || this.subscribeToAudioPlayer();
@@ -55,11 +55,11 @@ export class MusicPlayerBot {
     });
   }
 
-  subscribeToAudioPlayer() {
+  subscribeToAudioPlayer(): AudioPlayer {
     return createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Play } });
   }
 
-  async addToQueueAndPlay(songs: AudioMaker[]) {
+  async addToQueueAndPlay(songs: AudioMaker[]): Promise<void> {
     this.queues.set(Math.random(), songs);
     this.songs = songs;
     if (this.botQueue?.lockPlay || this.audioPlayer.state.status !== AudioPlayerStatus.Idle) return;

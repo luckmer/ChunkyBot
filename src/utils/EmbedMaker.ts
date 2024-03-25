@@ -1,9 +1,9 @@
-import { ColorResolvable, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { InfoData } from "play-dl";
 import { formatTime } from "./formatTime";
 
 export class EmbedMaker {
-  getSongModal(song: InfoData) {
+  getSongModal(song: InfoData): EmbedBuilder {
     const icons = song.video_details.channel?.icons;
 
     const chanelIcon = icons?.length ? icons[0].url : undefined;
@@ -25,15 +25,15 @@ export class EmbedMaker {
       .setTimestamp();
   }
 
-  getContentModal(content: string) {
+  getContentModal(content: string): EmbedBuilder {
     return new EmbedBuilder().setColor("#7646CD").setTitle(content);
   }
 
-  getValueContentModal(title: string) {
+  getValueContentModal(title: string): EmbedBuilder {
     return new EmbedBuilder().setTitle(title).setDescription("Description").setColor("#7646CD");
   }
 
-  getQueueModal(content: string, song: InfoData) {
+  getQueueModal(content: string, song: InfoData): EmbedBuilder {
     const icons = song.video_details.channel?.icons;
 
     const chanelIcon = icons?.length ? icons[0].url : undefined;

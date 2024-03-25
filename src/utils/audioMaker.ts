@@ -1,4 +1,4 @@
-import { createAudioResource } from "@discordjs/voice";
+import { AudioResource, createAudioResource } from "@discordjs/voice";
 import { InfoData, stream, video_basic_info } from "play-dl";
 import { ISong } from "../types/types";
 
@@ -11,7 +11,7 @@ export class AudioMaker {
     this.songInfo = songInfo;
   }
 
-  static async setSong(url: string): Promise<any> {
+  static async setSong(url: string): Promise<AudioMaker | undefined> {
     try {
       const songInfo = await video_basic_info(url);
       const song = {
@@ -25,7 +25,7 @@ export class AudioMaker {
     }
   }
 
-  async getAudioResource() {
+  async getAudioResource(): Promise<AudioResource<ISong>> {
     const playStream = await stream(this.song.url);
     return createAudioResource(playStream.stream, {
       metadata: this.song,
