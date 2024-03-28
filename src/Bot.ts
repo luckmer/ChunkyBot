@@ -68,10 +68,6 @@ export default class Bot {
   };
 
   lockSearchCommand = (lock: boolean): void => {
-    if (!lock) {
-      this.cooldowns.delete(searchCommand);
-      return;
-    }
     this.lockCommand.set(searchCommand, lock);
   };
 

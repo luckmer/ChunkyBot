@@ -67,6 +67,12 @@ export class MusicPlayerBot {
     this.lockPlay = typeof this.botQueue === "undefined" ? true : this.botQueue?.lockPlay;
   }
 
+  async skipSong(songs: AudioMaker[]) {
+    this.queues.set(Math.random(), songs);
+    this.songs = songs;
+    await this.play();
+  }
+
   async play(): Promise<void> {
     this.lockPlay = true;
     try {

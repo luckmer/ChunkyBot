@@ -1,7 +1,6 @@
 import {
   ActionRowBuilder,
   ChatInputCommandInteraction,
-  GuildMember,
   PermissionsBitField,
   SlashCommandBuilder,
   StringSelectMenuBuilder,
@@ -11,9 +10,9 @@ import {
 import { YouTube, type Video } from "youtube-sr";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
+import { validateYoutubeUrl } from "../../reqex";
 import { IInteraction } from "../../types/types";
 import { AudioMaker, EmbedMaker } from "../../utils";
-import { validateYoutubeUrl } from "../../reqex";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -54,6 +53,7 @@ module.exports = {
       } catch {}
 
       if (!videos || videos.length === 0) {
+        bot.lockSearchCommand(false);
         await interaction.editReply({ embeds: [embedMaker.getContentModal("Sorry, but I couldn't find any songs!")] });
         return;
       }

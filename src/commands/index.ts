@@ -6,3 +6,4 @@ export * as play from "./music/play";
 export * as resume from "./music/resume";
 export * as search from "./music/search";
 export * as volume from "./music/volume";
+export * as skip from "./music/skip";

@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
-import { AudioMaker, EmbedMaker, searchCommand } from "../../utils";
 import { validateYoutubeUrl } from "../../reqex";
+import { AudioMaker, EmbedMaker } from "../../utils";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -43,6 +43,7 @@ module.exports = {
     const song = await AudioMaker.setSong(url);
 
     if (typeof song === "undefined") {
+      bot.lockSearchCommand(false);
       await interaction.editReply({
         embeds: [embedMaker.getContentModal("Sorry, but I couldn't find any songs!")]
       });
