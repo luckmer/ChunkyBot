@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, GuildMember, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 import { validateYoutubeUrl } from "../../reqex";
@@ -19,10 +19,10 @@ module.exports = {
     PermissionsBitField.Flags.ManageMessages
   ],
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
-    const botQueue = bot.queues.get(interaction.guild!.id);
+    const guildMember: GuildMember | undefined = interaction.guild!.members.cache.get(interaction.user.id);
+    const botQueue: MusicPlayerBot | undefined = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
-    const embedMaker = new EmbedMaker();
+    const embedMaker: EmbedMaker = new EmbedMaker();
 
     if (!channel) {
       await interaction.reply({
@@ -32,7 +32,7 @@ module.exports = {
     }
     interaction.deferReply({ ephemeral: true }).catch(console.error);
 
-    const url = interaction.options.getString("url")!;
+    const url: string = interaction.options.getString("url")!;
 
     if (!url.match(validateYoutubeUrl)) {
       bot.lockSearchCommand(true);
@@ -40,7 +40,7 @@ module.exports = {
       return;
     }
 
-    const song = await AudioMaker.setSong(url);
+    const song: AudioMaker | undefined = await AudioMaker.setSong(url);
 
     if (typeof song === "undefined") {
       bot.lockSearchCommand(false);
@@ -50,27 +50,25 @@ module.exports = {
       return;
     }
 
-    const musicPlayer = new MusicPlayerBot({
+    const musicPlayer: MusicPlayerBot = new MusicPlayerBot({
       voicechannel: channel,
       chanel: interaction.channel,
-      interaction,
       botQueue
     });
 
     bot.queues.set(interaction.guild!.id, musicPlayer);
-    const queue = Array.from(botQueue?.queues.values() ?? []).flat();
+    const queue: AudioMaker[] = Array.from(botQueue?.queues.values() ?? []).flat();
     await musicPlayer.addToQueueAndPlay([song, ...queue]);
 
-    const response = {
-      embeds: [
-        !queue.length
-          ? embedMaker.getSongModal(song.songInfo)
-          : embedMaker.getQueueModal("| Track Added to Queue", song.songInfo)
-      ]
-    };
+    if (queue.length) {
+      await interaction.channel?.send({
+        embeds: [embedMaker.getQueueModal("Track Added to Queue", song.songInfo)]
+      });
 
-    await interaction.channel?.send(response);
-    channel.send(response);
+      channel.send({
+        embeds: [embedMaker.getQueueModal("Track Added to Queue", song.songInfo)]
+      });
+    }
 
     interaction.deleteReply().catch(console.error);
   }

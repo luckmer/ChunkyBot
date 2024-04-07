@@ -15,6 +15,7 @@ import * as path from "path";
 import { MusicPlayerBot } from "./bot/MusicPlayerBot";
 import { Command } from "./types/types";
 import { searchCommand } from "./utils";
+import { Reply } from "./utils/reply";
 
 dotenv.config();
 
@@ -56,7 +57,6 @@ export default class Bot {
       for (const file of commandFiles) {
         const importedCommands = await import(path.join(__dirname, "commands", `${file}`));
         const commands: Command[] = Object.values(importedCommands);
-
         for (const command of commands) {
           this.commands.push(command.data);
           this.interactionCommands.set(command.data.name, command);
@@ -75,13 +75,10 @@ export default class Bot {
     if (!this.lockCommand.has(searchCommand)) {
       this.lockCommand.set(searchCommand, false);
     }
-    const hasSearchLock = this.lockCommand.get(searchCommand)!;
+    const hasSearchLock = this.lockCommand.get(searchCommand);
 
     if (hasSearchLock) {
-      await interaction.reply({
-        content: `\`Select a song\` is already active.`,
-        ephemeral: true
-      });
+      await Reply(interaction, `\`Select a song\` is already active.`);
       return true;
     }
 
@@ -100,16 +97,16 @@ export default class Bot {
       this.cooldowns.set(interaction.commandName, new Collection());
     }
 
-    const now = Date.now();
-    const timestamps = this.cooldowns.get(interaction.commandName)!;
-    const cooldownAmount = (command?.cooldown || 1) * 1000;
+    const now: number = Date.now();
+    const timestamps: Collection<string, number> = this.cooldowns.get(interaction.commandName)!;
+    const cooldownAmount: number = (command?.cooldown || 1) * 1000;
 
-    const timestamp = timestamps.get(interaction.user.id);
+    const timestamp: number | undefined = timestamps.get(interaction.user.id);
 
     if (timestamp) {
-      const expirationTime = timestamp + cooldownAmount;
+      const expirationTime: number = timestamp + cooldownAmount;
       if (now < expirationTime) {
-        const timeLeft = (expirationTime - now) / 1000;
+        const timeLeft: number = (expirationTime - now) / 1000;
         await interaction.reply({
           content: `${timeLeft} more second(s) before reusing the \`${interaction.commandName}\` command.`,
           ephemeral: true
@@ -138,21 +135,15 @@ export default class Bot {
         return;
       }
 
-      if (interaction.commandName === searchCommand) {
-        this.lockCommand.set(searchCommand, true);
-        setTimeout(() => this.lockCommand.set(searchCommand, false), 60000);
-      }
-
-      const lockExecuteCommand = await this.lockSearchCommandService(interaction);
+      const lockExecuteCommand: boolean = await this.lockSearchCommandService(interaction);
       if (lockExecuteCommand) return;
 
-      const hasCooldown = await this.cooldownService(interaction, command);
+      const hasCooldown: boolean = await this.cooldownService(interaction, command);
       if (hasCooldown) return;
 
       try {
         await command.execute(interaction);
       } catch (error) {
-        console.error(error);
         if (interaction.replied || interaction.deferred) {
           await interaction.followUp({ content: "There was an error while executing this command!", ephemeral: true });
         } else {

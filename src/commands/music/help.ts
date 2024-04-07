@@ -1,12 +1,13 @@
+import { Command } from "../../types/types";
 import { bot } from "./../../../index";
-import { CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { Collection, CommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 
 module.exports = {
   data: new SlashCommandBuilder().setName("help").setDescription("List of help commands"),
   async execute(interaction: CommandInteraction) {
-    let commands = bot.interactionCommands;
+    let commands: Collection<string, Command> = bot.interactionCommands;
 
-    let helpEmbed = new EmbedBuilder()
+    let helpEmbed: EmbedBuilder = new EmbedBuilder()
       .setTitle(interaction.client.user!.username)
       .setDescription("Description")
       .setColor("#F8AA2A");

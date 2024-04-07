@@ -1,12 +1,13 @@
 import { EmbedBuilder } from "discord.js";
 import { InfoData } from "play-dl";
 import { formatTime } from "./formatTime";
+import { ChannelIconInterface } from "youtube-sr";
 
 export class EmbedMaker {
   getSongModal(song: InfoData): EmbedBuilder {
-    const icons = song.video_details.channel?.icons;
+    const icons: ChannelIconInterface[] | undefined = song.video_details.channel?.icons;
 
-    const chanelIcon = icons?.length ? icons[0].url : undefined;
+    const chanelIcon: string | undefined = icons?.length ? icons[0].url : undefined;
     return new EmbedBuilder()
       .setColor("#7646CD")
       .setTitle(song.video_details.title ?? "--")
@@ -16,7 +17,6 @@ export class EmbedMaker {
         iconURL: chanelIcon,
         url: song.video_details.channel?.url
       })
-
       .setThumbnail(typeof chanelIcon === "undefined" ? null : chanelIcon)
       .addFields({
         name: "Duration",
@@ -34,9 +34,9 @@ export class EmbedMaker {
   }
 
   getQueueModal(content: string, song: InfoData): EmbedBuilder {
-    const icons = song.video_details.channel?.icons;
+    const icons: ChannelIconInterface[] | undefined = song.video_details.channel?.icons;
 
-    const chanelIcon = icons?.length ? icons[0].url : undefined;
+    const chanelIcon: string | undefined = icons?.length ? icons[0].url : undefined;
 
     return new EmbedBuilder()
       .setColor("#7646CD")

@@ -1,6 +1,10 @@
 import {
   ActionRowBuilder,
   ChatInputCommandInteraction,
+  EmbedBuilder,
+  GuildMember,
+  InteractionCollector,
+  Message,
   PermissionsBitField,
   SlashCommandBuilder,
   StringSelectMenuBuilder,
@@ -29,11 +33,11 @@ module.exports = {
     PermissionsBitField.Flags.ManageMessages
   ],
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
-    const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
-    const botQueue = bot.queues.get(interaction.guild!.id);
+    const guildMember: GuildMember | undefined = interaction.guild!.members.cache.get(interaction.user.id);
+    const botQueue: MusicPlayerBot | undefined = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
 
-    const embedMaker = new EmbedMaker();
+    const embedMaker: EmbedMaker = new EmbedMaker();
 
     if (!channel) {
       await interaction.reply({
@@ -43,12 +47,12 @@ module.exports = {
     }
     await interaction.deferReply({ ephemeral: true }).catch(console.error);
 
-    const url = interaction.options.getString("url")!;
+    const url: string = interaction.options.getString("url")!;
 
     if (!url.match(validateYoutubeUrl)) {
       let videos: Video[] | undefined;
       try {
-        const result = await YouTube.search(url, { limit: 10, type: "video" });
+        const result: Video[] = await YouTube.search(url, { limit: 10, type: "video" });
         videos = result.filter((video) => video.title != "Private video" && video.title != "Deleted video");
       } catch {}
 
@@ -58,19 +62,27 @@ module.exports = {
         return;
       }
 
-      const options = videos.map((video: Video, i) => {
+      const options: StringSelectMenuOptionBuilder[] = videos.map((video: Video) => {
         return new StringSelectMenuOptionBuilder()
           .setLabel(video.title ?? "couldn't find title")
           .setDescription(video.description ?? "couldn't find description")
           .setValue(video.url);
       });
 
-      const select = new StringSelectMenuBuilder().setCustomId("songSelection").setPlaceholder("").addOptions(options);
+      const select: StringSelectMenuBuilder = new StringSelectMenuBuilder()
+        .setCustomId("songSelection")
+        .setPlaceholder("")
+        .addOptions(options);
 
-      const components = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
-      const result = await interaction.editReply({ content: "Select a song:", components: [components] });
+      const components: ActionRowBuilder<StringSelectMenuBuilder> =
+        new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select);
 
-      const collector = result.createMessageComponentCollector({
+      const result: Message<boolean> = await interaction.editReply({
+        content: "Select a song:",
+        components: [components]
+      });
+
+      const collector: InteractionCollector<any> = result.createMessageComponentCollector({
         filter: (interaction: IInteraction) => interaction.customId === "songSelection",
         time: 60000
       });
@@ -80,12 +92,12 @@ module.exports = {
         await songInteraction.deferUpdate();
         if (!(songInteraction instanceof StringSelectMenuInteraction)) return;
 
-        const selectedSong = songInteraction.values[0];
-        const song = await AudioMaker.setSong(selectedSong);
-        const musicPlayer = new MusicPlayerBot({
+        const selectedSong: string = songInteraction.values[0];
+        const song: AudioMaker | undefined = await AudioMaker.setSong(selectedSong);
+
+        const musicPlayer: MusicPlayerBot = new MusicPlayerBot({
           voicechannel: channel,
           chanel: interaction.channel,
-          interaction,
           botQueue
         });
 
@@ -97,20 +109,18 @@ module.exports = {
         }
 
         bot.queues.set(interaction.guild!.id, musicPlayer);
-        const queue = Array.from(botQueue?.queues.values() ?? []).flat();
+        const queue: AudioMaker[] = Array.from(botQueue?.queues.values() ?? []).flat();
 
         await musicPlayer.addToQueueAndPlay([song, ...queue]);
 
-        const response = {
-          embeds: [
-            !queue.length
-              ? embedMaker.getSongModal(song.songInfo)
-              : embedMaker.getQueueModal("| Track Added to Queue", song.songInfo)
-          ]
-        };
+        if (queue.length) {
+          const response: { embeds: EmbedBuilder[] } = {
+            embeds: [embedMaker.getQueueModal("Track Added to Queue", song.songInfo)]
+          };
 
-        await interaction.channel?.send(response);
-        channel.send(response);
+          await interaction.channel?.send(response);
+          channel.send(response);
+        }
 
         interaction.deleteReply().catch(console.error);
       });

@@ -1,10 +1,5 @@
-import {
-  type ChatInputCommandInteraction,
-  type SlashCommandBuilder,
-  type TextBasedChannel,
-  type VoiceBasedChannel
-} from "discord.js";
-import { MusicPlayerBot } from "src/bot/MusicPlayerBot";
+import { type SlashCommandBuilder, type TextBasedChannel, type VoiceBasedChannel } from "discord.js";
+import { MusicPlayerBot } from "../bot/MusicPlayerBot";
 
 export interface Command {
   data: SlashCommandBuilder;
@@ -17,7 +12,6 @@ export interface IInteraction {
 }
 
 export interface IMusicPlayerBot {
-  interaction: ChatInputCommandInteraction;
   voicechannel: VoiceBasedChannel;
   chanel: TextBasedChannel | null;
   botQueue: MusicPlayerBot | undefined;
@@ -26,5 +20,11 @@ export interface IMusicPlayerBot {
 export interface ISong {
   url: string;
   title: string;
+  duration: number;
+}
+
+export interface IMetadata {
+  title: string;
+  url: string;
   duration: number;
 }

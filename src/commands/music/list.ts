@@ -1,18 +1,19 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { EmbedMaker, formatTime } from "../../utils";
+import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("list")
     .setDescription("Allows you to view the list of songs in the playlist."),
   async execute(interaction: ChatInputCommandInteraction) {
-    const embedMaker = new EmbedMaker();
+    const embedMaker: EmbedMaker = new EmbedMaker();
     await interaction.deferReply({ ephemeral: true });
-    const guildID = interaction.guild!.id;
-    const queue = bot.queues.get(guildID);
+    const guildID: string = interaction.guild!.id;
+    const queue: MusicPlayerBot | undefined = bot.queues.get(guildID);
 
-    let helpEmbed = embedMaker.getValueContentModal(interaction.client.user!.username);
+    let helpEmbed: EmbedBuilder = embedMaker.getValueContentModal(interaction.client.user!.username);
 
     if (!queue?.songs.length) {
       await interaction.editReply({

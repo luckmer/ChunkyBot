@@ -1,15 +1,15 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
-import { EmbedMaker } from "../../utils";
+import { AudioMaker, EmbedMaker } from "../../utils";
 import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 
 module.exports = {
   data: new SlashCommandBuilder().setName("skip").setDescription("Allows you to skip to the next available song."),
   async execute(interaction: ChatInputCommandInteraction) {
-    const guildMember = interaction.guild!.members.cache.get(interaction.user.id);
-    const botQueue = bot.queues.get(interaction.guild!.id);
+    const guildMember: GuildMember | undefined = interaction.guild!.members.cache.get(interaction.user.id);
+    const botQueue: MusicPlayerBot | undefined = bot.queues.get(interaction.guild!.id);
     const { channel } = guildMember!.voice;
-    const embedMaker = new EmbedMaker();
+    const embedMaker: EmbedMaker = new EmbedMaker();
 
     if (!channel) {
       await interaction.reply({
@@ -19,7 +19,7 @@ module.exports = {
     }
 
     await interaction.deferReply({ ephemeral: true }).catch(console.error);
-    const queue = Array.from(botQueue?.queues.values() ?? []).flat();
+    const queue: AudioMaker[] = Array.from(botQueue?.queues.values() ?? []).flat();
 
     queue.pop();
 
@@ -30,17 +30,16 @@ module.exports = {
       return;
     }
 
-    const musicPlayer = new MusicPlayerBot({
+    const musicPlayer: MusicPlayerBot = new MusicPlayerBot({
       voicechannel: channel,
       chanel: interaction.channel,
-      interaction,
       botQueue
     });
 
     await musicPlayer.skipSong(queue);
     bot.queues.set(interaction.guild!.id, musicPlayer);
 
-    const response = {
+    const response: { embeds: EmbedBuilder[] } = {
       embeds: [embedMaker.getSongModal(queue[0].songInfo)]
     };
 

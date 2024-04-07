@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { bot } from "../../../index";
 import { EmbedMaker } from "../../utils";
+import { MusicPlayerBot } from "../../bot/MusicPlayerBot";
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -11,8 +12,8 @@ module.exports = {
     ),
   async execute(interaction: ChatInputCommandInteraction): Promise<void> {
     await interaction.deferReply({ ephemeral: true });
-    const queue = bot.queues.get(interaction.guild!.id);
-    const embedMaker = new EmbedMaker();
+    const queue: MusicPlayerBot | undefined = bot.queues.get(interaction.guild!.id);
+    const embedMaker: EmbedMaker = new EmbedMaker();
 
     if (!queue) {
       await interaction.editReply({
@@ -21,7 +22,7 @@ module.exports = {
       return;
     }
 
-    const volume = interaction.options.getInteger("volume")!;
+    const volume: number = interaction.options.getInteger("volume")!;
 
     if (!volume) {
       await interaction.editReply({
