@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "commonjs",
-    "rootDir": "./src/",
+    "rootDir": "./",
     "outDir": "./dist/",
     "strict": true,
     "moduleResolution": "node",
@@ -14,11 +14,21 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "removeComments": true,
-    "typeRoots": ["node_modules/@types"],
+    "typeRoots": [
+      "node_modules/@types"
+    ],
     "sourceMap": false,
     "baseUrl": "./"
   },
-  "files": ["src/Bot.ts", "src"],
-  "include": ["*"],
-  "exclude": ["node_modules", "dist"]
+  "files": [
+    "src/Bot.ts",
+    "src"
+  ],
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
