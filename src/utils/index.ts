@@ -1,4 +1,4 @@
 export * from "./audioMaker";
-export * from "./embedMaker";
+export * from "./EmbedMaker";
 export * from "./static";
 export * from "./formatTime";
